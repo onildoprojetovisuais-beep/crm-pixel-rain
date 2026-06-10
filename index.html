@@ -503,6 +503,11 @@ textarea { resize: vertical; min-height: 80px; }
 .health-warning { background: rgba(234,179,8,0.1); border: 1px solid rgba(234,179,8,0.25); color: var(--yellow); }
 .health-critical { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.25); color: var(--red); }
 
+/* ICP STATUS */
+.icp-status-block { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--bg3); }
+.icp-status-emoji { font-size: 18px; line-height: 1; }
+.icp-status-label { font-size: 14px; font-weight: 700; letter-spacing: 0.01em; }
+
 /* NEXT ACTION */
 .next-action-box { background: rgba(91,106,240,0.08); border: 1px solid rgba(91,106,240,0.25); border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 4px; }
 .next-action-emoji { font-size: 22px; margin-bottom: 6px; display: block; }
@@ -2438,6 +2443,7 @@ function leadToDbRow(lead) {
     segment: lead.segment, ticket: lead.ticket, stage: lead.stage,
     score: lead.score || 0, hot: !!lead.hot, indication: !!lead.indication,
     no_shows:   lead.noShows   || 0,
+    classificacao_final: lead.classificacaoFinal || null,
     lost_reason: lead.lostReason || null,
     next_touch:         lead.nextTouch        || null,
     first_contact_date: lead.firstContactDate || null,
@@ -2485,6 +2491,7 @@ function dbToLead(row, hist, notes, acts, chks) {
     noShows: row.no_shows || 0, lostReason: row.lost_reason || '',
     nextTouch: row.next_touch || '', firstContactDate: row.first_contact_date || '',
     stageDate: row.stage_date || '',
+    classificacaoFinal: row.classificacao_final || null,
     scoreData: {
       budget:      row.score_budget      || 0, urgencia:    row.score_urgencia    || 0,
       consciencia: row.score_consciencia || 0, estrutura:   row.score_estrutura   || 0,
@@ -2999,6 +3006,25 @@ function getScoreClass(score) {
   if (score >= 60) return { cls:'score-b', icp:'icp-b', label:'Cliente B' };
   if (score >= 40) return { cls:'score-c', icp:'icp-c', label:'Cliente C' };
   return { cls:'score-d', icp:'icp-fora', label:'Fora ICP' };
+}
+
+function getIcpStatus(lead) {
+  const cf = lead.classificacaoFinal || '';
+  if (cf === 'A') return { emoji: '🟢', label: 'ICP Forte', color: 'var(--green)' };
+  if (cf === 'B' || cf === 'C') return { emoji: '🟡', label: 'ICP Possível', color: 'var(--yellow)' };
+  if (cf === 'fora_icp') return { emoji: '🔴', label: 'Fora ICP', color: 'var(--red)' };
+  return { emoji: '⚪', label: 'Não classificado', color: 'var(--text3)' };
+}
+
+function getPrioridade(lead) {
+  // Replica determinar_prioridade() de qualificacao_oficial.py
+  // score = score_total_avaliavel (pré-contato); scoreData.budget = score_budget (D1 faturamento)
+  const scoreBudget = (lead.scoreData && lead.scoreData.budget) || 0;
+  const scoreTotal = lead.score || 0;
+  if (scoreBudget === 0) return { emoji: '🔴', label: 'Baixa', color: 'var(--red)' };
+  if (scoreTotal >= 15 && scoreBudget >= 5) return { emoji: '🟢', label: 'Alta', color: 'var(--green)' };
+  if (scoreTotal >= 8 && scoreBudget > 0) return { emoji: '🟡', label: 'Média', color: 'var(--yellow)' };
+  return { emoji: '🔴', label: 'Baixa', color: 'var(--red)' };
 }
 
 function getNoShowCount(lead) {
@@ -4092,18 +4118,24 @@ function renderDrawerBody(lead) {
     </div>
   `;
 
-  // Health alerts
-  const healthAlerts = getLeadHealthAlerts(lead);
-  let healthHtml = '<div class="health-panel">';
-  if (healthAlerts.length === 0) {
-    healthHtml += '<div class="health-item health-ok">✅ Lead saudável — nenhum alerta ativo</div>';
+  // Bloco de qualificação: PRIORIDADE (E1–E4) ou ICP STATUS (E5+)
+  const stageNum = parseInt((lead.stage || 'E1').replace('E', ''), 10);
+  let qualTitle, qualHtml;
+  if (stageNum <= 4) {
+    const prio = getPrioridade(lead);
+    qualTitle = 'PRIORIDADE';
+    qualHtml = `<div class="icp-status-block">
+      <span class="icp-status-emoji">${prio.emoji}</span>
+      <span class="icp-status-label" style="color:${prio.color}">${prio.label}</span>
+    </div>`;
   } else {
-    healthHtml += healthAlerts.map(a => {
-      const cls = a.level === 'critical' ? 'health-critical' : a.level === 'warning' ? 'health-warning' : 'health-ok';
-      return `<div class="health-item ${cls}">${a.icon} ${a.message}</div>`;
-    }).join('');
+    const icpInfo = getIcpStatus(lead);
+    qualTitle = 'ICP STATUS';
+    qualHtml = `<div class="icp-status-block">
+      <span class="icp-status-emoji">${icpInfo.emoji}</span>
+      <span class="icp-status-label" style="color:${icpInfo.color}">${icpInfo.label}</span>
+    </div>`;
   }
-  healthHtml += '</div>';
 
   document.getElementById('drawerBody').innerHTML = `
     <div class="drawer-section">
@@ -4111,8 +4143,8 @@ function renderDrawerBody(lead) {
       ${nextActionHtml}
     </div>
     <div class="drawer-section">
-      <div class="drawer-section-title">Saúde do Lead</div>
-      ${healthHtml}
+      <div class="drawer-section-title">${qualTitle}</div>
+      ${qualHtml}
     </div>
     <div class="drawer-section">
       <div class="drawer-section-title">Dados do Lead</div>
