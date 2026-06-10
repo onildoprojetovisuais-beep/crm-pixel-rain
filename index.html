@@ -387,7 +387,20 @@ textarea { resize: vertical; min-height: 80px; }
 .drawer-close { background: transparent; border: none; color: var(--text3); cursor: pointer; font-size: 20px; padding: 4px; transition: color 0.15s; }
 .drawer-close:hover { color: var(--text); }
 .drawer-body { flex: 1; overflow-y: auto; padding: 16px 18px; }
-.drawer-footer { padding: 12px 18px; border-top: 1px solid var(--border); display: flex; gap: 8px; flex-shrink: 0; }
+.drawer-footer { padding: 12px 18px; border-top: 1px solid var(--border); display: flex; gap: 8px; flex-shrink: 0; flex-wrap: wrap; }
+.drawer-quick-actions { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+.drawer-qa-btn { display: inline-flex; align-items: center; gap: 5px; padding: 5px 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg2); color: var(--text2); font-size: 11px; font-weight: 500; cursor: pointer; transition: all 0.15s; text-decoration: none; line-height: 1; }
+.drawer-qa-btn:hover { background: var(--bg3); color: var(--text); }
+.drawer-qa-btn.qa-wpp { border-color: rgba(37,211,102,0.35); color: #25d366; }
+.drawer-qa-btn.qa-wpp:hover { background: rgba(37,211,102,0.1); }
+.drawer-qa-btn.qa-ig { border-color: rgba(225,48,108,0.35); color: #e1306c; }
+.drawer-qa-btn.qa-ig:hover { background: rgba(225,48,108,0.1); }
+.drawer-qa-btn.qa-site { border-color: rgba(99,102,241,0.35); color: var(--accent2); }
+.drawer-qa-btn.qa-site:hover { background: rgba(99,102,241,0.1); }
+.drawer-qa-btn.qa-maps { border-color: rgba(234,88,12,0.35); color: #ea580c; }
+.drawer-qa-btn.qa-maps:hover { background: rgba(234,88,12,0.1); }
+.btn-wpp-cta { background: #25d366; color: #fff; border: none; font-weight: 600; }
+.btn-wpp-cta:hover { background: #1ebe5a; color: #fff; }
 
 .drawer-section { margin-bottom: 18px; }
 .drawer-section-title {
@@ -1987,7 +2000,7 @@ input.filter-input { min-width: clamp(100px, 12vw, 160px); }
   <div class="drawer-body" id="drawerBody">
     <!-- renderizado via JS -->
   </div>
-  <div class="drawer-footer">
+  <div class="drawer-footer" id="drawerFooter">
     <button class="btn btn-ghost btn-sm" onclick="openDrawerEdit()">Editar</button>
     <button class="btn btn-primary btn-sm" onclick="openDrawerHistory()">Histórico</button>
   </div>
@@ -4137,6 +4150,14 @@ function renderDrawerBody(lead) {
     </div>`;
   }
 
+  const stageNum = parseInt((lead.stage || 'E1').replace('E', ''), 10);
+  const showWppCta = stageNum >= 2 && !!lead.whatsapp;
+  document.getElementById('drawerFooter').innerHTML = `
+    ${showWppCta ? `<button class="btn btn-sm btn-wpp-cta" onclick="openWhatsAppWithScript('${lead.id}')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Abrir WhatsApp</button>` : ''}
+    <button class="btn btn-ghost btn-sm" onclick="openDrawerEdit()">Editar</button>
+    <button class="btn btn-primary btn-sm" onclick="openDrawerHistory()">Histórico</button>
+  `;
+
   document.getElementById('drawerBody').innerHTML = `
     <div class="drawer-section">
       <div class="drawer-section-title">Próxima Ação</div>
@@ -4148,6 +4169,12 @@ function renderDrawerBody(lead) {
     </div>
     <div class="drawer-section">
       <div class="drawer-section-title">Dados do Lead</div>
+      <div class="drawer-quick-actions">
+        ${lead.whatsapp ? `<button class="drawer-qa-btn qa-wpp" onclick="openWhatsApp('${lead.id}')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>WhatsApp</button>` : ''}
+        ${lead.instagram ? `<button class="drawer-qa-btn qa-ig" onclick="openInstagram('${lead.id}')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>Instagram</button>` : ''}
+        ${lead.site ? `<button class="drawer-qa-btn qa-site" onclick="openSite('${lead.id}')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Site</button>` : ''}
+        <button class="drawer-qa-btn qa-maps" onclick="openGoogleMaps('${lead.id}')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>Google Maps</button>
+      </div>
       <div class="drawer-grid">
         ${lead.empresa ? `<div class="drawer-field"><label>Empresa</label><span>${lead.empresa}</span></div>` : ''}
         <div class="drawer-field"><label>Nome</label><span>${lead.name}</span></div>
@@ -4413,6 +4440,34 @@ function openInstagram(leadId) {
   if (!lead?.instagram) return;
   const handle = lead.instagram.replace('@','');
   window.open(`https://instagram.com/${handle}`, '_blank');
+}
+function openSite(leadId) {
+  const lead = state.leads.find(l => l.id === leadId);
+  if (!lead?.site) return;
+  const url = lead.site.startsWith('http') ? lead.site : 'https://' + lead.site;
+  window.open(url, '_blank');
+}
+function openGoogleMaps(leadId) {
+  const lead = state.leads.find(l => l.id === leadId);
+  if (!lead) return;
+  const q = encodeURIComponent((lead.empresa || lead.name) + ' ' + (lead.city || ''));
+  window.open(`https://www.google.com/maps/search/?api=1&query=${q}`, '_blank');
+}
+function openWhatsAppWithScript(leadId) {
+  const lead = state.leads.find(l => l.id === leadId);
+  if (!lead?.whatsapp) { toast('WhatsApp não cadastrado', 'error'); return; }
+  const STAGE_WPP_SCRIPT = {
+    'E2':'t1a','E3':'t2','E4':'triagem','E5':'conf_diag',
+    'E6':'conf_24h','E7':'envio_prop','E8':'pp1','E9':'negociacao','E10':'reativacao'
+  };
+  const num = lead.whatsapp.replace(/\D/g,'');
+  const scriptId = STAGE_WPP_SCRIPT[lead.stage];
+  const tmpl = scriptId ? TEMPLATES.find(t => t.id === scriptId) : null;
+  const text = tmpl ? applyLeadTemplates(tmpl.text, lead) : '';
+  const url = text
+    ? `https://wa.me/55${num}?text=${encodeURIComponent(text)}`
+    : `https://wa.me/55${num}`;
+  window.open(url, '_blank');
 }
 function openEmail(leadId) {
   const lead = state.leads.find(l => l.id === leadId);
