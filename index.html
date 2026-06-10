@@ -4150,7 +4150,6 @@ function renderDrawerBody(lead) {
     </div>`;
   }
 
-  const stageNum = parseInt((lead.stage || 'E1').replace('E', ''), 10);
   const showWppCta = stageNum >= 2 && !!lead.whatsapp;
   document.getElementById('drawerFooter').innerHTML = `
     ${showWppCta ? `<button class="btn btn-sm btn-wpp-cta" onclick="openWhatsAppWithScript('${lead.id}')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Abrir WhatsApp</button>` : ''}
