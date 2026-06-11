@@ -2096,8 +2096,36 @@ input.filter-input { min-width: clamp(100px, 12vw, 160px); }
             <label class="radio-opt"><input type="radio" name="nl_hot" value="nao" checked> <span>Não</span></label>
           </div>
         </div>
+        <div class="form-sep"></div>
+        <div class="form-section-title">Research</div>
         <div class="form-group span2">
-          <label>Observação inicial / Gancho</label>
+          <label>Post com mais engajamento</label>
+          <input type="text" id="nl_postDestaque" placeholder="Ex: Post sobre bronquiolite de 05/06 — 180 curtidas, 23 comentários de mães">
+        </div>
+        <div class="form-group span2">
+          <label>Avaliação mais específica no Google</label>
+          <input type="text" id="nl_avaliacaoGoogle" placeholder="Ex: 'Única pediatra que explicou o diagnóstico de forma que entendi' — mai/2026">
+        </div>
+        <div class="form-group">
+          <label>Responde avaliações?</label>
+          <div class="radio-group">
+            <label class="radio-opt"><input type="radio" name="nl_respondeAvaliacoes" value="sim"> <span>Sim</span></label>
+            <label class="radio-opt"><input type="radio" name="nl_respondeAvaliacoes" value="nao" checked> <span>Não</span></label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Destaque de agendamento?</label>
+          <div class="radio-group">
+            <label class="radio-opt"><input type="radio" name="nl_destaqueAgendamento" value="sim"> <span>Sim</span></label>
+            <label class="radio-opt"><input type="radio" name="nl_destaqueAgendamento" value="nao" checked> <span>Não</span></label>
+          </div>
+        </div>
+        <div class="form-group span2">
+          <label>Gancho identificado</label>
+          <textarea id="nl_gancho" placeholder="Ex: Vi que seu post sobre bronquiolite teve 180 curtidas — sua audiência claramente confia no que você fala sobre doenças respiratórias. O que me chamou atenção é que não tem destaque de agendamento."></textarea>
+        </div>
+        <div class="form-group span2">
+          <label>Observações gerais</label>
           <textarea id="nl_obs" placeholder="Ex: Parou de postar há 3 semanas. Perfil com 4.2k seguidores. Concorrente lançou campanha na região."></textarea>
         </div>
       </div>
@@ -2375,8 +2403,36 @@ input.filter-input { min-width: clamp(100px, 12vw, 160px); }
             <label class="radio-opt"><input type="radio" name="el_hot" value="nao"> <span>Não</span></label>
           </div>
         </div>
+        <div class="form-sep"></div>
+        <div class="form-section-title">Research</div>
         <div class="form-group span2">
-          <label>Observação</label>
+          <label>Post com mais engajamento</label>
+          <input type="text" id="el_postDestaque">
+        </div>
+        <div class="form-group span2">
+          <label>Avaliação mais específica no Google</label>
+          <input type="text" id="el_avaliacaoGoogle">
+        </div>
+        <div class="form-group">
+          <label>Responde avaliações?</label>
+          <div class="radio-group">
+            <label class="radio-opt"><input type="radio" name="el_respondeAvaliacoes" value="sim"> <span>Sim</span></label>
+            <label class="radio-opt"><input type="radio" name="el_respondeAvaliacoes" value="nao"> <span>Não</span></label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Destaque de agendamento?</label>
+          <div class="radio-group">
+            <label class="radio-opt"><input type="radio" name="el_destaqueAgendamento" value="sim"> <span>Sim</span></label>
+            <label class="radio-opt"><input type="radio" name="el_destaqueAgendamento" value="nao"> <span>Não</span></label>
+          </div>
+        </div>
+        <div class="form-group span2">
+          <label>Gancho identificado</label>
+          <textarea id="el_gancho"></textarea>
+        </div>
+        <div class="form-group span2">
+          <label>Observações gerais</label>
           <textarea id="el_obs"></textarea>
         </div>
       </div>
@@ -2453,6 +2509,11 @@ function leadToDbRow(lead) {
     site:      lead.site      || null, instagram: lead.instagram || null,
     whatsapp:  lead.whatsapp  || null, email:     lead.email    || null,
     obs:       lead.obs       || null,
+    gancho:    lead.gancho    || null,
+    post_destaque:       lead.postDestaque       || null,
+    avaliacao_google:    lead.avaliacaoGoogle    || null,
+    responde_avaliacoes: !!lead.respondeAvaliacoes,
+    destaque_agendamento: !!lead.destaqueAgendamento,
     segment: lead.segment, ticket: lead.ticket, stage: lead.stage,
     score: lead.score || 0, hot: !!lead.hot, indication: !!lead.indication,
     no_shows:   lead.noShows   || 0,
@@ -2499,6 +2560,10 @@ function dbToLead(row, hist, notes, acts, chks) {
     empresa: row.empresa || '', cargo: row.cargo || '',
     site: row.site || '', instagram: row.instagram || '',
     whatsapp: row.whatsapp || '', email: row.email || '', obs: row.obs || '',
+    gancho: row.gancho || '', postDestaque: row.post_destaque || '',
+    avaliacaoGoogle: row.avaliacao_google || '',
+    respondeAvaliacoes: !!row.responde_avaliacoes,
+    destaqueAgendamento: !!row.destaque_agendamento,
     segment: row.segment, ticket: row.ticket, stage: row.stage,
     score: row.score || 0, hot: !!row.hot, indication: !!row.indication,
     noShows: row.no_shows || 0, lostReason: row.lost_reason || '',
@@ -3281,6 +3346,11 @@ function saveLead() {
     email: document.getElementById('nl_email').value.trim(),
     instagram: document.getElementById('nl_instagram').value.trim(),
     obs: document.getElementById('nl_obs').value.trim(),
+    postDestaque: document.getElementById('nl_postDestaque').value.trim(),
+    avaliacaoGoogle: document.getElementById('nl_avaliacaoGoogle').value.trim(),
+    gancho: document.getElementById('nl_gancho').value.trim(),
+    respondeAvaliacoes: document.querySelector('input[name="nl_respondeAvaliacoes"]:checked')?.value === 'sim',
+    destaqueAgendamento: document.querySelector('input[name="nl_destaqueAgendamento"]:checked')?.value === 'sim',
     nextTouch: document.getElementById('nl_nexttouch').value,
     firstContactDate: stage !== 'E1' ? todayStr() : '',
     stageDate: todayStr(),
@@ -3300,7 +3370,9 @@ function saveLead() {
   toast(`Lead "${name}" cadastrado com sucesso!`, 'success');
 
   // Reset form
-  ['nl_name','nl_empresa','nl_cargo','nl_city','nl_site','nl_whatsapp','nl_email','nl_instagram','nl_obs'].forEach(id => document.getElementById(id).value = '');
+  ['nl_name','nl_empresa','nl_cargo','nl_city','nl_site','nl_whatsapp','nl_email','nl_instagram','nl_obs','nl_postDestaque','nl_avaliacaoGoogle','nl_gancho'].forEach(id => document.getElementById(id).value = '');
+  document.querySelectorAll('input[name="nl_respondeAvaliacoes"]').forEach(r => r.checked = r.value === 'nao');
+  document.querySelectorAll('input[name="nl_destaqueAgendamento"]').forEach(r => r.checked = r.value === 'nao');
 }
 
 // ============================================================
@@ -3407,8 +3479,19 @@ function renderDetails(lead) {
       <div class="detail-item"><label>Primeiro Contato</label><span>${lead.firstContactDate ? formatDate(lead.firstContactDate) : '—'}</span></div>
       <div class="detail-item"><label>Próximo Toque</label><span>${lead.nextTouch ? formatDate(lead.nextTouch) : '—'}</span></div>
     </div>
-    ${lead.obs ? `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px">
-      <div style="font-size:11px;color:var(--text3);margin-bottom:6px">OBSERVAÇÕES / GANCHO</div>
+    ${(lead.gancho || lead.postDestaque || lead.avaliacaoGoogle) ? `
+    <div style="background:var(--bg3);border:1px solid rgba(86,212,216,0.2);border-radius:var(--radius-sm);padding:12px;margin-top:12px">
+      <div style="font-size:11px;color:var(--accent);margin-bottom:10px;letter-spacing:0.5px;text-transform:uppercase">Research</div>
+      ${lead.postDestaque ? `<div style="margin-bottom:8px"><div style="font-size:10px;color:var(--text3);margin-bottom:3px;text-transform:uppercase;letter-spacing:0.4px">Post com mais engajamento</div><div style="font-size:13px;color:var(--text2);line-height:1.5">${lead.postDestaque}</div></div>` : ''}
+      ${lead.avaliacaoGoogle ? `<div style="margin-bottom:8px"><div style="font-size:10px;color:var(--text3);margin-bottom:3px;text-transform:uppercase;letter-spacing:0.4px">Avaliação Google</div><div style="font-size:13px;color:var(--text2);line-height:1.5">${lead.avaliacaoGoogle}</div></div>` : ''}
+      <div style="display:flex;gap:24px;margin-bottom:${lead.gancho ? '10px' : '0'}">
+        <div><div style="font-size:10px;color:var(--text3);margin-bottom:3px;text-transform:uppercase;letter-spacing:0.4px">Responde avaliações</div><div style="font-size:13px;color:${lead.respondeAvaliacoes ? 'var(--green)' : 'var(--text3)'};font-weight:${lead.respondeAvaliacoes ? '600' : '400'}">${lead.respondeAvaliacoes ? 'Sim' : 'Não'}</div></div>
+        <div><div style="font-size:10px;color:var(--text3);margin-bottom:3px;text-transform:uppercase;letter-spacing:0.4px">Destaque de agendamento</div><div style="font-size:13px;color:${lead.destaqueAgendamento ? 'var(--green)' : 'var(--text3)'};font-weight:${lead.destaqueAgendamento ? '600' : '400'}">${lead.destaqueAgendamento ? 'Sim' : 'Não'}</div></div>
+      </div>
+      ${lead.gancho ? `<div style="padding-top:10px;border-top:1px solid var(--border)"><div style="font-size:10px;color:var(--text3);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.4px">Gancho identificado</div><div style="font-size:13px;color:var(--text);line-height:1.6;font-style:italic">"${lead.gancho}"</div></div>` : ''}
+    </div>` : ''}
+    ${lead.obs ? `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;margin-top:12px">
+      <div style="font-size:11px;color:var(--text3);margin-bottom:6px">OBSERVAÇÕES GERAIS</div>
       <div style="font-size:13px;color:var(--text2);line-height:1.5">${lead.obs}</div>
     </div>` : ''}
     ${lead.lostReason ? `<div style="background:rgba(239,68,68,0.07);border:1px solid rgba(239,68,68,0.2);border-radius:var(--radius-sm);padding:12px;margin-top:12px">
@@ -3936,8 +4019,15 @@ function openEditLead() {
   document.getElementById('el_ticket').value = lead.ticket || 'N1';
   document.getElementById('el_nexttouch').value = lead.nextTouch || '';
   document.getElementById('el_obs').value = lead.obs || '';
+  document.getElementById('el_postDestaque').value = lead.postDestaque || '';
+  document.getElementById('el_avaliacaoGoogle').value = lead.avaliacaoGoogle || '';
+  document.getElementById('el_gancho').value = lead.gancho || '';
   const hotVal = lead.hot ? 'sim' : 'nao';
   document.querySelectorAll('input[name="el_hot"]').forEach(r => r.checked = r.value === hotVal);
+  const rAvalVal = lead.respondeAvaliacoes ? 'sim' : 'nao';
+  document.querySelectorAll('input[name="el_respondeAvaliacoes"]').forEach(r => r.checked = r.value === rAvalVal);
+  const dAgendVal = lead.destaqueAgendamento ? 'sim' : 'nao';
+  document.querySelectorAll('input[name="el_destaqueAgendamento"]').forEach(r => r.checked = r.value === dAgendVal);
   openModal('modalEditLead');
 }
 
@@ -3956,6 +4046,11 @@ function updateLead() {
   lead.ticket = document.getElementById('el_ticket').value;
   lead.nextTouch = document.getElementById('el_nexttouch').value;
   lead.obs = document.getElementById('el_obs').value.trim();
+  lead.postDestaque = document.getElementById('el_postDestaque').value.trim();
+  lead.avaliacaoGoogle = document.getElementById('el_avaliacaoGoogle').value.trim();
+  lead.gancho = document.getElementById('el_gancho').value.trim();
+  lead.respondeAvaliacoes = document.querySelector('input[name="el_respondeAvaliacoes"]:checked')?.value === 'sim';
+  lead.destaqueAgendamento = document.querySelector('input[name="el_destaqueAgendamento"]:checked')?.value === 'sim';
   lead.hot = document.querySelector('input[name="el_hot"]:checked')?.value === 'sim';
   saveState(); renderAll();
   sbUpsertLead(lead);

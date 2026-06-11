@@ -56,6 +56,13 @@ CREATE TABLE IF NOT EXISTS leads (
   email               TEXT,
   obs                 TEXT,
 
+  -- Research pré-contato
+  gancho              TEXT,
+  post_destaque       TEXT,
+  avaliacao_google    TEXT,
+  responde_avaliacoes BOOLEAN     NOT NULL DEFAULT FALSE,
+  destaque_agendamento BOOLEAN    NOT NULL DEFAULT FALSE,
+
   -- Classificação
   segment             TEXT        NOT NULL
                         CHECK (segment IN ('solo','clinica','transicao','jovem','veterano')),
