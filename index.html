@@ -120,20 +120,22 @@ input.filter-input { min-width: 160px; }
 .col-body.drag-over { background: rgba(91,106,240,0.08); outline: 2px dashed var(--accent); outline-offset: -4px; border-radius: 6px; }
 
 /* Column colors */
-.col[data-col="E1"] .col-header { background: rgba(59,130,246,0.1); }
-.col[data-col="E1"] .col-code { background: rgba(59,130,246,0.2); color: #60a5fa; }
-.col[data-col="E2"] .col-header { background: rgba(99,102,241,0.1); }
-.col[data-col="E2"] .col-code { background: rgba(99,102,241,0.2); color: #818cf8; }
-.col[data-col="E3"] .col-header { background: rgba(139,92,246,0.1); }
-.col[data-col="E3"] .col-code { background: rgba(139,92,246,0.2); color: #a78bfa; }
-.col[data-col="E4"] .col-header { background: rgba(20,184,166,0.1); }
-.col[data-col="E4"] .col-code { background: rgba(20,184,166,0.2); color: #2dd4bf; }
-.col[data-col="E5"] .col-header { background: rgba(245,158,11,0.1); }
-.col[data-col="E5"] .col-code { background: rgba(245,158,11,0.2); color: #fbbf24; }
-.col[data-col="E6"] .col-header { background: rgba(34,197,94,0.1); }
-.col[data-col="E6"] .col-code { background: rgba(34,197,94,0.2); color: #4ade80; }
-.col[data-col="E7"] .col-header { background: rgba(234,179,8,0.1); }
-.col[data-col="E7"] .col-code { background: rgba(234,179,8,0.2); color: #fde047; }
+.col[data-col="E1"] .col-header { background: rgba(107,114,128,0.1); }
+.col[data-col="E1"] .col-code { background: rgba(107,114,128,0.2); color: #9ca3af; }
+.col[data-col="E2"] .col-header { background: rgba(59,130,246,0.1); }
+.col[data-col="E2"] .col-code { background: rgba(59,130,246,0.2); color: #60a5fa; }
+.col[data-col="E3"] .col-header { background: rgba(99,102,241,0.1); }
+.col[data-col="E3"] .col-code { background: rgba(99,102,241,0.2); color: #818cf8; }
+.col[data-col="E4"] .col-header { background: rgba(139,92,246,0.1); }
+.col[data-col="E4"] .col-code { background: rgba(139,92,246,0.2); color: #a78bfa; }
+.col[data-col="E5"] .col-header { background: rgba(20,184,166,0.1); }
+.col[data-col="E5"] .col-code { background: rgba(20,184,166,0.2); color: #2dd4bf; }
+.col[data-col="E6"] .col-header { background: rgba(245,158,11,0.1); }
+.col[data-col="E6"] .col-code { background: rgba(245,158,11,0.2); color: #fbbf24; }
+.col[data-col="E7"] .col-header { background: rgba(34,197,94,0.1); }
+.col[data-col="E7"] .col-code { background: rgba(34,197,94,0.2); color: #4ade80; }
+.col[data-col="E8"] .col-header { background: rgba(234,179,8,0.1); }
+.col[data-col="E8"] .col-code { background: rgba(234,179,8,0.2); color: #fde047; }
 
 /* CARDS */
 .card {
@@ -2065,9 +2067,10 @@ input.filter-input { min-width: clamp(100px, 12vw, 160px); }
         <div class="form-group">
           <label>Etapa inicial</label>
           <select id="nl_stage">
-            <option value="E1">E1 — Conexão</option>
-            <option value="E2">E2 — Em Contato</option>
-            <option value="E3">E3 — Agendado</option>
+            <option value="E1">E1 — Base</option>
+            <option value="E2">E2 — Conexão</option>
+            <option value="E3">E3 — Em Contato</option>
+            <option value="E4">E4 — Agendado</option>
           </select>
         </div>
         <div class="form-group">
@@ -2589,13 +2592,14 @@ function dbToLead(row, hist, notes, acts, chks) {
 // DATA STRUCTURES & CONSTANTS
 // ============================================================
 const COLS = [
-  { id:'E1', label:'Conexão' },
-  { id:'E2', label:'Em Contato' },
-  { id:'E3', label:'Agendado' },
-  { id:'E4', label:'Call Realizada' },
-  { id:'E5', label:'No Show' },
-  { id:'E6', label:'Em Negociação' },
-  { id:'E7', label:'Contrato Fechado' },
+  { id:'E1', label:'Base' },
+  { id:'E2', label:'Conexão' },
+  { id:'E3', label:'Em Contato' },
+  { id:'E4', label:'Agendado' },
+  { id:'E5', label:'Call Realizada' },
+  { id:'E6', label:'No Show' },
+  { id:'E7', label:'Em Negociação' },
+  { id:'E8', label:'Contrato Fechado' },
 ];
 
 const TICKET_LABELS = { N1:'R$4k/mês', N2:'R$6.5-8k/mês', N3:'R$7.5-10k/mês' };
@@ -2623,7 +2627,7 @@ const ACT_TIPOS = {
 };
 
 // SLA: days per stage
-const SLA_DAYS = { E1:3, E2:5, E3:5, E4:3, E5:7, E6:10, E7:999 };
+const SLA_DAYS = { E1:999, E2:3, E3:5, E4:5, E5:3, E6:7, E7:10, E8:999 };
 
 // TEMPLATES
 const TEMPLATES = [
@@ -3060,7 +3064,7 @@ function daysDiff(dateStr) {
 }
 
 function getSlaStatus(lead) {
-  if (!lead.firstContactDate && lead.stage === 'E1') return 'ok';
+  if (!lead.firstContactDate && ['E1','E2'].includes(lead.stage)) return 'ok';
   const stageDate = lead.stageDate || lead.firstContactDate;
   if (!stageDate) return 'ok';
   const days = daysDiff(stageDate);
@@ -3101,7 +3105,7 @@ function getNoShowCount(lead) {
 }
 
 function isNoShowLost(lead) {
-  return lead.stage === 'E5' && getNoShowCount(lead) >= 3;
+  return lead.stage === 'E6' && getNoShowCount(lead) >= 3;
 }
 
 function formatDate(dateStr) {
@@ -3129,15 +3133,15 @@ function renderAll() {
 function renderStats() {
   const leads = state.leads;
   const total = leads.length;
-  const contacted = leads.filter(l => ['E2','E3','E4','E5','E6','E7'].includes(l.stage)).length;
-  const scheduled = leads.filter(l => ['E3','E4','E5','E6','E7'].includes(l.stage)).length;
-  const callDone = leads.filter(l => ['E4','E6','E7'].includes(l.stage)).length;
+  const contacted = leads.filter(l => ['E3','E4','E5','E6','E7','E8'].includes(l.stage)).length;
+  const scheduled = leads.filter(l => ['E4','E5','E6','E7','E8'].includes(l.stage)).length;
+  const callDone = leads.filter(l => ['E5','E7','E8'].includes(l.stage)).length;
   const respRate = total > 0 ? Math.round(contacted/total*100) : 0;
   const callRate = scheduled > 0 ? Math.round(callDone/scheduled*100) : 0;
-  const closed = leads.filter(l => l.stage === 'E7').length;
+  const closed = leads.filter(l => l.stage === 'E8').length;
   const closeRate = total > 0 ? Math.round(closed/total*100) : 0;
-  const slaOver = leads.filter(l => l.stage !== 'E7' && getSlaStatus(l) === 'over').length;
-  const mrrLeads = leads.filter(l => l.stage === 'E6');
+  const slaOver = leads.filter(l => l.stage !== 'E8' && getSlaStatus(l) === 'over').length;
+  const mrrLeads = leads.filter(l => l.stage === 'E7');
   const mrr = mrrLeads.reduce((s,l) => s + (TICKET_AVG[l.ticket] || 0), 0);
   const noShowLeads = leads.filter(l => getNoShowCount(l) > 0).length;
 
@@ -3492,12 +3496,13 @@ function renderDetails(lead) {
 // Stage → script IDs mapping
 const STAGE_SCRIPTS = {
   'E1': [],
-  'E2': ['t1a','t1b','t1c','t1d'],
-  'E3': ['conf_diag','conf_24h'],
-  'E4': ['triagem','envio_prop'],
-  'E5': ['t2','t3','t4','t5'],
-  'E6': ['pp1','pp3','pp7','negociacao'],
-  'E7': ['reativacao']
+  'E2': [],
+  'E3': ['t1a','t1b','t1c','t1d'],
+  'E4': ['conf_diag','conf_24h'],
+  'E5': ['triagem','envio_prop'],
+  'E6': ['t2','t3','t4','t5'],
+  'E7': ['pp1','pp3','pp7','negociacao'],
+  'E8': ['reativacao']
 };
 
 function renderTemplates(lead) {
@@ -3623,12 +3628,12 @@ function renderChecklists(lead) {
   const stage = lead.stage;
   const chk = lead.checklists || {};
 
-  const showDiag = ['E3','E4','E5'].includes(stage);
-  const showFollowup = ['E6','E7'].includes(stage);
-  const showFechamento = ['E6','E7'].includes(stage);
+  const showDiag = ['E4','E5','E6'].includes(stage);
+  const showFollowup = ['E7','E8'].includes(stage);
+  const showFechamento = ['E7','E8'].includes(stage);
 
   if (!showDiag && !showFollowup && !showFechamento) {
-    container.innerHTML = `<div style="text-align:center;padding:24px 12px;color:var(--text3);font-size:12px">Nenhum checklist para esta etapa.<br>Avance o lead para E3+ para ver os checklists.</div>`;
+    container.innerHTML = `<div style="text-align:center;padding:24px 12px;color:var(--text3);font-size:12px">Nenhum checklist para esta etapa.<br>Avance o lead para E4+ para ver os checklists.</div>`;
     return;
   }
 
